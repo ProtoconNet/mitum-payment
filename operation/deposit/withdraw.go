@@ -18,21 +18,19 @@ var (
 
 type WithdrawFact struct {
 	base.BaseFact
-	sender          base.Address
-	contract        base.Address
-	depositCurrency ctypes.CurrencyID
-	currency        ctypes.CurrencyID
+	sender   base.Address
+	contract base.Address
+	currency ctypes.CurrencyID
 }
 
 func NewWithdrawFact(
-	token []byte, sender, contract base.Address, dCurrency, currency ctypes.CurrencyID) WithdrawFact {
+	token []byte, sender, contract base.Address, currency ctypes.CurrencyID) WithdrawFact {
 	bf := base.NewBaseFact(WithdrawFactHint, token)
 	fact := WithdrawFact{
-		BaseFact:        bf,
-		sender:          sender,
-		contract:        contract,
-		depositCurrency: dCurrency,
-		currency:        currency,
+		BaseFact: bf,
+		sender:   sender,
+		contract: contract,
+		currency: currency,
 	}
 
 	fact.SetHash(fact.GenerateHash())
@@ -49,7 +47,6 @@ func (fact WithdrawFact) IsValid(b []byte) error {
 		fact.BaseHinter,
 		fact.sender,
 		fact.contract,
-		fact.depositCurrency,
 		fact.currency,
 	); err != nil {
 		return common.ErrFactInvalid.Wrap(err)
@@ -75,7 +72,6 @@ func (fact WithdrawFact) Bytes() []byte {
 		fact.Token(),
 		fact.sender.Bytes(),
 		fact.contract.Bytes(),
-		fact.depositCurrency.Bytes(),
 		fact.currency.Bytes(),
 	)
 }
@@ -90,10 +86,6 @@ func (fact WithdrawFact) Sender() base.Address {
 
 func (fact WithdrawFact) Contract() base.Address {
 	return fact.contract
-}
-
-func (fact WithdrawFact) DepositCurrency() ctypes.CurrencyID {
-	return fact.depositCurrency
 }
 
 func (fact WithdrawFact) Currency() ctypes.CurrencyID {

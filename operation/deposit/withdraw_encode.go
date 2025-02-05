@@ -9,7 +9,7 @@ import (
 func (fact *WithdrawFact) unpack(
 	enc encoder.Encoder,
 	sa, ca string,
-	dcid, cid string,
+	cid string,
 ) error {
 	switch sender, err := base.DecodeAddress(sa, enc); {
 	case err != nil:
@@ -25,7 +25,6 @@ func (fact *WithdrawFact) unpack(
 		fact.contract = contract
 	}
 
-	fact.depositCurrency = types.CurrencyID(dcid)
 	fact.currency = types.CurrencyID(cid)
 
 	return nil

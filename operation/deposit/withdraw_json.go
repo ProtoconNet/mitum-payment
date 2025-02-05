@@ -11,10 +11,9 @@ import (
 
 type WithdrawFactJSONMarshaler struct {
 	base.BaseFactJSONMarshaler
-	Sender          base.Address      `json:"sender"`
-	Contract        base.Address      `json:"contract"`
-	DepositCurrency ctypes.CurrencyID `json:"deposit_currency"`
-	Currency        ctypes.CurrencyID `json:"currency"`
+	Sender   base.Address      `json:"sender"`
+	Contract base.Address      `json:"contract"`
+	Currency ctypes.CurrencyID `json:"currency"`
 }
 
 func (fact WithdrawFact) MarshalJSON() ([]byte, error) {
@@ -22,17 +21,15 @@ func (fact WithdrawFact) MarshalJSON() ([]byte, error) {
 		BaseFactJSONMarshaler: fact.BaseFact.JSONMarshaler(),
 		Sender:                fact.sender,
 		Contract:              fact.contract,
-		DepositCurrency:       fact.depositCurrency,
 		Currency:              fact.currency,
 	})
 }
 
 type WithdrawFactJSONUnmarshaler struct {
 	base.BaseFactJSONUnmarshaler
-	Sender          string `json:"sender"`
-	Contract        string `json:"contract"`
-	DepositCurrency string `json:"deposit_currency"`
-	Currency        string `json:"currency"`
+	Sender   string `json:"sender"`
+	Contract string `json:"contract"`
+	Currency string `json:"currency"`
 }
 
 func (fact *WithdrawFact) DecodeJSON(b []byte, enc encoder.Encoder) error {
@@ -44,7 +41,7 @@ func (fact *WithdrawFact) DecodeJSON(b []byte, enc encoder.Encoder) error {
 	fact.BaseFact.SetJSONUnmarshaler(u.BaseFactJSONUnmarshaler)
 
 	if err := fact.unpack(
-		enc, u.Sender, u.Contract, u.DepositCurrency, u.Currency,
+		enc, u.Sender, u.Contract, u.Currency,
 	); err != nil {
 		return common.DecorateError(err, common.ErrDecodeJson, *fact)
 	}

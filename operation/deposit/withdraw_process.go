@@ -67,7 +67,7 @@ func (opp *WithdrawProcessor) PreProcess(
 				Errorf("expected %T, not %T", WithdrawFact{}, op.Fact())), nil
 	}
 
-	cid := fact.DepositCurrency()
+	cid := fact.Currency()
 	if err := fact.IsValid(nil); err != nil {
 		return ctx, base.NewBaseOperationProcessReasonError(
 			common.ErrMPreProcess.
@@ -139,7 +139,7 @@ func (opp *WithdrawProcessor) Process( // nolint:dupl
 ) {
 	fact, _ := op.Fact().(WithdrawFact)
 
-	cid := fact.DepositCurrency()
+	cid := fact.Currency()
 	st, _ := cstate.ExistsState(state.DesignStateKey(fact.Contract().String()), "service design", getStateFunc)
 	design, _ := state.GetDesignFromState(st)
 	st, _ = cstate.ExistsState(

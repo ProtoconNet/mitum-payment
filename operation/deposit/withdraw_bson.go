@@ -12,23 +12,21 @@ import (
 func (fact WithdrawFact) MarshalBSON() ([]byte, error) {
 	return bsonenc.Marshal(
 		bson.M{
-			"_hint":            fact.Hint().String(),
-			"hash":             fact.BaseFact.Hash().String(),
-			"token":            fact.BaseFact.Token(),
-			"sender":           fact.sender,
-			"contract":         fact.contract,
-			"deposit_currency": fact.depositCurrency,
-			"currency":         fact.currency,
+			"_hint":    fact.Hint().String(),
+			"hash":     fact.BaseFact.Hash().String(),
+			"token":    fact.BaseFact.Token(),
+			"sender":   fact.sender,
+			"contract": fact.contract,
+			"currency": fact.currency,
 		},
 	)
 }
 
 type WithdrawFactBSONUnmarshaler struct {
-	Hint            string `bson:"_hint"`
-	Sender          string `bson:"sender"`
-	Contract        string `bson:"contract"`
-	DepositCurrency string `bson:"deposit_currency"`
-	Currency        string `bson:"currency"`
+	Hint     string `bson:"_hint"`
+	Sender   string `bson:"sender"`
+	Contract string `bson:"contract"`
+	Currency string `bson:"currency"`
 }
 
 func (fact *WithdrawFact) DecodeBSON(b []byte, enc *bsonenc.Encoder) error {
@@ -54,7 +52,7 @@ func (fact *WithdrawFact) DecodeBSON(b []byte, enc *bsonenc.Encoder) error {
 	fact.BaseHinter = hint.NewBaseHinter(ht)
 
 	if err := fact.unpack(
-		enc, uf.Sender, uf.Contract, uf.DepositCurrency, uf.Currency,
+		enc, uf.Sender, uf.Contract, uf.Currency,
 	); err != nil {
 		return common.DecorateError(err, common.ErrDecodeBson, *fact)
 	}

@@ -12,12 +12,11 @@ import (
 type WithdrawCommand struct {
 	BaseCommand
 	currencycmds.OperationFlags
-	Sender          currencycmds.AddressFlag    `arg:"" name:"sender" help:"sender address" required:"true"`
-	Contract        currencycmds.AddressFlag    `arg:"" name:"contract" help:"contract address" required:"true"`
-	DepositCurrency currencycmds.CurrencyIDFlag `arg:"" name:"deposit currency" help:"deposit currency id" required:"true"`
-	Currency        currencycmds.CurrencyIDFlag `arg:"" name:"currency" help:"currency id" required:"true"`
-	sender          base.Address
-	contract        base.Address
+	Sender   currencycmds.AddressFlag    `arg:"" name:"sender" help:"sender address" required:"true"`
+	Contract currencycmds.AddressFlag    `arg:"" name:"contract" help:"contract address" required:"true"`
+	Currency currencycmds.CurrencyIDFlag `arg:"" name:"currency" help:"currency id" required:"true"`
+	sender   base.Address
+	contract base.Address
 }
 
 func (cmd *WithdrawCommand) Run(pctx context.Context) error { // nolint:dupl
@@ -64,7 +63,7 @@ func (cmd *WithdrawCommand) parseFlags() error {
 func (cmd *WithdrawCommand) createOperation() (base.Operation, error) { // nolint:dupl
 	e := util.StringError("failed to create withdraw operation")
 
-	fact := deposit.NewWithdrawFact([]byte(cmd.Token), cmd.sender, cmd.contract, cmd.DepositCurrency.CID, cmd.Currency.CID)
+	fact := deposit.NewWithdrawFact([]byte(cmd.Token), cmd.sender, cmd.contract, cmd.Currency.CID)
 
 	op, err := deposit.NewWithdraw(fact)
 	if err != nil {
