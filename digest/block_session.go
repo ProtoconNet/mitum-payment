@@ -35,6 +35,9 @@ type BlockSession struct {
 	balanceModels         []mongo.WriteModel
 	currencyModels        []mongo.WriteModel
 	contractAccountModels []mongo.WriteModel
+	didRegistryModels     []mongo.WriteModel
+	didDataModels         []mongo.WriteModel
+	didDocumentModels     []mongo.WriteModel
 	paymentDesignModels   []mongo.WriteModel
 	paymentAccountModels  []mongo.WriteModel
 	statesValue           *sync.Map
@@ -85,6 +88,9 @@ func (bs *BlockSession) Prepare() error {
 		return err
 	}
 	if err := bs.prepareCurrencies(); err != nil {
+		return err
+	}
+	if err := bs.prepareDIDRegistry(); err != nil {
 		return err
 	}
 	if err := bs.preparePayment(); err != nil {
@@ -148,6 +154,24 @@ func (bs *BlockSession) Commit(_ context.Context) error {
 
 		if len(bs.paymentAccountModels) > 0 {
 			if err := bs.writeModels(txnCtx, DefaultColNamePaymentAccount, bs.paymentAccountModels); err != nil {
+				return nil, err
+			}
+		}
+
+		if len(bs.didRegistryModels) > 0 {
+			if err := bs.writeModels(txnCtx, cdigest.DefaultColNameDIDRegistry, bs.didRegistryModels); err != nil {
+				return nil, err
+			}
+		}
+
+		if len(bs.didDataModels) > 0 {
+			if err := bs.writeModels(txnCtx, cdigest.DefaultColNameDIDData, bs.didDataModels); err != nil {
+				return nil, err
+			}
+		}
+
+		if len(bs.didDocumentModels) > 0 {
+			if err := bs.writeModels(txnCtx, cdigest.DefaultColNameDIDDocument, bs.didDocumentModels); err != nil {
 				return nil, err
 			}
 		}
