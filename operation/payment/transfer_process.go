@@ -79,15 +79,6 @@ func (opp *TransferProcessor) PreProcess(
 	}
 
 	cid := fact.Currency()
-	_, err := cstate.ExistsState(currency.BalanceStateKey(fact.Contract(), cid),
-		fmt.Sprintf("balance of account, %v", fact.Contract()), getStateFunc,
-	)
-	if err != nil {
-		return ctx, base.NewBaseOperationProcessReasonError(
-			common.ErrMPreProcess.Wrap(common.ErrMStateNF).
-				Errorf("%v", err)), nil
-	}
-
 	st, err := cstate.ExistsState(state.DesignStateKey(fact.Contract().String()), "service design", getStateFunc)
 	if err != nil {
 		return nil, base.NewBaseOperationProcessReasonError(
@@ -126,6 +117,15 @@ func (opp *TransferProcessor) PreProcess(
 				"transfer amount(%v) exceeds the limit(%v) of account, %v in contract account %v.",
 				fact.Amount(), *tLimit, fact.Sender(), fact.Contract(),
 			)), nil
+	}
+
+	_, err = cstate.ExistsState(currency.BalanceStateKey(fact.Contract(), cid),
+		fmt.Sprintf("balance of account, %v", fact.Contract()), getStateFunc,
+	)
+	if err != nil {
+		return ctx, base.NewBaseOperationProcessReasonError(
+			common.ErrMPreProcess.Wrap(common.ErrMStateNF).
+				Errorf("%v", err)), nil
 	}
 
 	st, err = cstate.ExistsState(

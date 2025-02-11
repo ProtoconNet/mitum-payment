@@ -76,7 +76,7 @@ func (opp *DepositProcessor) PreProcess(
 	}
 
 	_, err := cstate.ExistsState(currency.BalanceStateKey(fact.Sender(), fact.Currency()),
-		fmt.Sprintf("balance of account, %v", fact.Sender()), getStateFunc,
+		fmt.Sprintf("balance of currency, %v of account, %v", fact.Currency(), fact.Sender()), getStateFunc,
 	)
 	if err != nil {
 		return ctx, base.NewBaseOperationProcessReasonError(
