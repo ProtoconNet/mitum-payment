@@ -1,12 +1,10 @@
 package digest
 
 import (
-	"net/http"
-	"time"
-
 	cdigest "github.com/ProtoconNet/mitum-currency/v3/digest"
 	"github.com/ProtoconNet/mitum-payment/types"
 	"github.com/ProtoconNet/mitum2/base"
+	"net/http"
 )
 
 func (hd *Handlers) handlePaymentDesign(w http.ResponseWriter, r *http.Request) {
@@ -30,7 +28,7 @@ func (hd *Handlers) handlePaymentDesign(w http.ResponseWriter, r *http.Request) 
 		cdigest.HTTP2WriteHalBytes(hd.encoder, w, v.([]byte), http.StatusOK)
 
 		if !shared {
-			cdigest.HTTP2WriteCache(w, cacheKey, time.Millisecond*100)
+			cdigest.HTTP2WriteCache(w, cacheKey, hd.expireShortLived)
 		}
 	}
 }
@@ -105,7 +103,7 @@ func (hd *Handlers) handlePaymentAccountInfo(w http.ResponseWriter, r *http.Requ
 		cdigest.HTTP2WriteHalBytes(hd.encoder, w, v.([]byte), http.StatusOK)
 
 		if !shared {
-			cdigest.HTTP2WriteCache(w, cachekey, time.Millisecond*100)
+			cdigest.HTTP2WriteCache(w, cachekey, hd.expireShortLived)
 		}
 	}
 }
