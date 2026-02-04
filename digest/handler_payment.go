@@ -1,15 +1,30 @@
 package digest
 
 import (
+	"net/http"
+
 	cdigest "github.com/ProtoconNet/mitum-currency/v3/digest"
+	ctypes "github.com/ProtoconNet/mitum-currency/v3/types"
 	"github.com/ProtoconNet/mitum-payment/types"
 	"github.com/ProtoconNet/mitum2/base"
-	"net/http"
 )
 
-func (hd *Handlers) handlePaymentDesign(w http.ResponseWriter, r *http.Request) {
+var (
+	HandlerPathPaymentDesign      = `/payment/{contract:(?i)` + ctypes.REStringAddressString + `}`
+	HandlerPathPaymentAccountInfo = `/payment/{contract:(?i)` + ctypes.REStringAddressString + `}/account/{address:(?i)` + ctypes.REStringAddressString + `}`
+)
+
+func SetHandlers(hd *cdigest.Handlers) {
+	get := 1000
+	_ = hd.SetHandler(HandlerPathPaymentAccountInfo, HandlePaymentAccountInfo, true, get, get).
+		Methods(http.MethodOptions, "GET")
+	_ = hd.SetHandler(HandlerPathPaymentDesign, HandlePaymentDesign, true, get, get).
+		Methods(http.MethodOptions, "GET")
+}
+
+func HandlePaymentDesign(hd *cdigest.Handlers, w http.ResponseWriter, r *http.Request) {
 	cacheKey := cdigest.CacheKeyPath(r)
-	if err := cdigest.LoadFromCache(hd.cache, cacheKey, w); err == nil {
+	if err := cdigest.LoadFromCache(hd.Cache(), cacheKey, w); err == nil {
 		return
 	}
 
@@ -20,37 +35,37 @@ func (hd *Handlers) handlePaymentDesign(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	if v, err, shared := hd.rg.Do(cacheKey, func() (interface{}, error) {
-		return hd.handlePaymentDesignInGroup(contract)
+	if v, err, shared := hd.RG().Do(cacheKey, func() (interface{}, error) {
+		return handlePaymentDesignInGroup(hd, contract)
 	}); err != nil {
 		cdigest.HTTP2HandleError(w, err)
 	} else {
-		cdigest.HTTP2WriteHalBytes(hd.encoder, w, v.([]byte), http.StatusOK)
+		cdigest.HTTP2WriteHalBytes(hd.Encoder(), w, v.([]byte), http.StatusOK)
 
 		if !shared {
-			cdigest.HTTP2WriteCache(w, cacheKey, hd.expireShortLived)
+			cdigest.HTTP2WriteCache(w, cacheKey, hd.ExpireShortLived())
 		}
 	}
 }
 
-func (hd *Handlers) handlePaymentDesignInGroup(contract string) ([]byte, error) {
+func handlePaymentDesignInGroup(hd *cdigest.Handlers, contract string) ([]byte, error) {
 	var de *types.Design
 	var st base.State
 
-	de, st, err := PaymentDesign(hd.database, contract)
+	de, st, err := PaymentDesign(hd.Database(), contract)
 	if err != nil {
 		return nil, err
 	}
 
-	i, err := hd.buildPaymentDesign(contract, *de, st)
+	i, err := buildPaymentDesign(hd, contract, *de, st)
 	if err != nil {
 		return nil, err
 	}
-	return hd.encoder.Marshal(i)
+	return hd.Encoder().Marshal(i)
 }
 
-func (hd *Handlers) buildPaymentDesign(contract string, de types.Design, st base.State) (cdigest.Hal, error) {
-	h, err := hd.combineURL(HandlerPathPaymentDesign, "contract", contract)
+func buildPaymentDesign(hd *cdigest.Handlers, contract string, de types.Design, st base.State) (cdigest.Hal, error) {
+	h, err := hd.CombineURL(HandlerPathPaymentDesign, "contract", contract)
 	if err != nil {
 		return nil, err
 	}
@@ -58,14 +73,14 @@ func (hd *Handlers) buildPaymentDesign(contract string, de types.Design, st base
 	var hal cdigest.Hal
 	hal = cdigest.NewBaseHal(de, cdigest.NewHalLink(h, nil))
 
-	h, err = hd.combineURL(cdigest.HandlerPathBlockByHeight, "height", st.Height().String())
+	h, err = hd.CombineURL(cdigest.HandlerPathBlockByHeight, "height", st.Height().String())
 	if err != nil {
 		return nil, err
 	}
 	hal = hal.AddLink("block", cdigest.NewHalLink(h, nil))
 
 	for i := range st.Operations() {
-		h, err := hd.combineURL(cdigest.HandlerPathOperation, "hash", st.Operations()[i].String())
+		h, err := hd.CombineURL(cdigest.HandlerPathOperation, "hash", st.Operations()[i].String())
 		if err != nil {
 			return nil, err
 		}
@@ -75,9 +90,9 @@ func (hd *Handlers) buildPaymentDesign(contract string, de types.Design, st base
 	return hal, nil
 }
 
-func (hd *Handlers) handlePaymentAccountInfo(w http.ResponseWriter, r *http.Request) {
+func HandlePaymentAccountInfo(hd *cdigest.Handlers, w http.ResponseWriter, r *http.Request) {
 	cachekey := cdigest.CacheKeyPath(r)
-	if err := cdigest.LoadFromCache(hd.cache, cachekey, w); err == nil {
+	if err := cdigest.LoadFromCache(hd.Cache(), cachekey, w); err == nil {
 		return
 	}
 
@@ -95,36 +110,36 @@ func (hd *Handlers) handlePaymentAccountInfo(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	if v, err, shared := hd.rg.Do(cachekey, func() (interface{}, error) {
-		return hd.handlePaymentAccountInfoInGroup(contract, account)
+	if v, err, shared := hd.RG().Do(cachekey, func() (interface{}, error) {
+		return handlePaymentAccountInfoInGroup(hd, contract, account)
 	}); err != nil {
 		cdigest.HTTP2HandleError(w, err)
 	} else {
-		cdigest.HTTP2WriteHalBytes(hd.encoder, w, v.([]byte), http.StatusOK)
+		cdigest.HTTP2WriteHalBytes(hd.Encoder(), w, v.([]byte), http.StatusOK)
 
 		if !shared {
-			cdigest.HTTP2WriteCache(w, cachekey, hd.expireShortLived)
+			cdigest.HTTP2WriteCache(w, cachekey, hd.ExpireShortLived())
 		}
 	}
 }
 
-func (hd *Handlers) handlePaymentAccountInfoInGroup(contract, account string) ([]byte, error) {
+func handlePaymentAccountInfoInGroup(hd *cdigest.Handlers, contract, account string) ([]byte, error) {
 	var accountInfoValue *AccountInfoValue
 
-	accountInfoValue, err := AccountInfo(hd.database, contract, account)
+	accountInfoValue, err := AccountInfo(hd.Database(), contract, account)
 	if err != nil {
 		return nil, err
 	}
 
-	i, err := hd.buildAccountInfoValue(contract, *accountInfoValue)
+	i, err := buildAccountInfoValue(hd, contract, *accountInfoValue)
 	if err != nil {
 		return nil, err
 	}
-	return hd.encoder.Marshal(i)
+	return hd.Encoder().Marshal(i)
 }
 
-func (hd *Handlers) buildAccountInfoValue(contract string, it AccountInfoValue) (cdigest.Hal, error) {
-	h, err := hd.combineURL(
+func buildAccountInfoValue(hd *cdigest.Handlers, contract string, it AccountInfoValue) (cdigest.Hal, error) {
+	h, err := hd.CombineURL(
 		HandlerPathPaymentAccountInfo,
 		"contract", contract, "address", it.setting.Address().String(),
 	)
